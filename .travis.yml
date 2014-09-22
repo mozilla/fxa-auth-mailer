@@ -1,0 +1,23 @@
+language: node_js
+
+node_js:
+ - "0.10"
+
+notifications:
+  email:
+    - zcarter@mozilla.com
+    - dcoates@mozilla.com
+    - jbonacci@mozilla.com
+    - rfkelly@mozilla.com
+    - achilton@mozilla.com
+  irc:
+    channels:
+      - "irc.mozilla.org#fxa"
+    use_notice: false
+    skip_join: false
+
+before_install:
+  - npm config set spin false
+
+script:
+  - npm test
