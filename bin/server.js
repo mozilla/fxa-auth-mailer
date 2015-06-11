@@ -68,6 +68,6 @@ P.all(
 .catch(
   function (err) {
     log.fatal({ op: 'init', err: err })
-    process.exit(8)
+    process.exit(8) // eslint-disable-line no-process-exit
   }
 )
