@@ -21,7 +21,7 @@ module.exports = function (log) {
         pass: config.password
       }
     }
-    
+
     this.mailer = nodemailer.createTransport('SMTP', options)
     this.sender = config.sender
     this.verificationUrl = config.verificationUrl
