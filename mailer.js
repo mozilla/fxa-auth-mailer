@@ -257,25 +257,7 @@ module.exports = function (log) {
   }
 
   Mailer.prototype.newSyncDeviceEmail = function (message) {
-    log.trace({ op: 'mailer.newSyncDeviceEmail', email: message.email, uid: message.uid })
-    var link = this.initiatePasswordChangeUrl + '?' + qs.stringify({ email: message.email })
-
-    return this.send({
-      acceptLanguage: message.acceptLanguage,
-      email: message.email,
-      headers: {
-        'X-Link': link
-      },
-      subject: gettext('New sign-in to Firefox'),
-      template: 'newSyncDeviceEmail',
-      templateValues: {
-        resetLink: link,
-        supportUrl: this.supportUrl,
-        supportLinkAttributes: this._supportLinkAttributes(),
-        passwordChangeLinkAttributes: this._initiatePasswordChange()
-      },
-      uid: message.uid
-    })
+    // XXX: Disabled for now, see issue #96
   }
 
   Mailer.prototype.postVerifyEmail = function (message) {
