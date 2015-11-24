@@ -46,6 +46,20 @@ const conf = convict({
     format: String,
     default: 'en'
   },
+  verificationReminder: {
+    region: {
+      doc: 'The region where the queues live, most likely the same region we are sending email e.g. us-east-1, us-west-2',
+      format: String,
+      env: 'REMINDER_REGION',
+      default: ''
+    },
+    queueUrl: {
+      doc: 'The bounce queue URL to use (should include https://sqs.<region>.amazonaws.com/<account-id>/<queue-name>)',
+      format: String,
+      env: 'REMINDER_QUEUE_URL',
+      default: ''
+    }
+  },
   mail: {
     host: {
       doc: 'The ip address the server should bind',

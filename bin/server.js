@@ -17,6 +17,8 @@ var mailerLog = require('../log')('mailer')
 var legacyMailerLog = require('../legacy_log')(mailerLog)
 var Mailer = require('../mailer')(legacyMailerLog)
 
+var VerificationReminder = require('../lib/verification-reminder')(log)
+
 P.all(
   [
     require('../translator')(config.get('locales')),
@@ -81,3 +83,8 @@ P.all(
     process.exit(8)
   }
 )
+
+// Start verification reminder checking
+// TODO: Add config: if enabled, should not be enabled for self-hosters or something
+var reminder = new VerificationReminder(config)
+// TODO: also use a local reminder of fake queue for NON-AWS.
