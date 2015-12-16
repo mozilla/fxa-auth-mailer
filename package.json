@@ -17,6 +17,7 @@
   "bugs": "https://github.com/mozilla/fxa-auth-mailer/issues",
   "license": "MPL-2.0",
   "dependencies": {
+    "aws-sdk": "2.2.23",
     "bluebird": "2.9.34",
     "convict": "1.0.2",
     "fxa-content-server-l10n": "git://github.com/mozilla/fxa-content-server-l10n.git",

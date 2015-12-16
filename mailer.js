@@ -20,7 +20,6 @@ module.exports = function (log) {
     return txt
   }
 
-
   function Mailer(translator, templates, config) {
     var options = {
       host: config.host,
@@ -302,16 +301,12 @@ module.exports = function (log) {
     })
   }
 
-  Mailer.prototype.verificationReminderEmail = function (message) {
+  Mailer.prototype.verificationReminderEmail = function (message, type) {
     log.trace({ op: 'mailer.verificationReminderEmail', email: message.email, uid: message.uid })
     var query = {
       uid: message.uid,
       code: message.code
     }
-
-    if (message.service) { query.service = message.service }
-    if (message.redirectTo) { query.redirectTo = message.redirectTo }
-    if (message.resume) { query.resume = message.resume }
 
     var link = this.verificationUrl + '?' + qs.stringify(query)
     query.one_click = true
@@ -326,8 +321,10 @@ module.exports = function (log) {
         'X-Uid': message.uid,
         'X-Verify-Code': message.code
       },
+      // TODO: subject should be different
       subject: gettext('Verify your Firefox Account'),
-      template: 'verificationReminderEmail',
+      // TODO: should support different type or have a different method for the second email.
+      template: 'verificationReminderFirstEmail',
       templateValues: {
         email: message.email,
         link: link,

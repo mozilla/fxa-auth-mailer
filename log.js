@@ -6,6 +6,6 @@ var mozlog = require('mozlog')
 
 var logConfig = require('./config').get('logging')
 
-mozlog.config(logConfig)
+mozlog.config(logConfig);
 
-module.exports = mozlog
+module.exports = mozlog;

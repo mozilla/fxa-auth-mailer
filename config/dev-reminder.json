@@ -1,0 +1,8 @@
+{
+  "verificationReminder": {
+    "enabled": true,
+    "queueRegion": "us-west-2",
+    "queueUrl": "https://sqs.us-west-2.amazonaws.com/927034868273/fxa-local-dev-verification-reminder-v1",
+    "visibilityTimeout": 10
+  }
+}
