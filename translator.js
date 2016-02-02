@@ -3,6 +3,7 @@ var i18n = require('i18n-abide')
 var Jed = require('jed')
 var P = require('bluebird')
 var po2json = require('po2json')
+var resolvePkg = require('resolve-pkg');
 var poParseFile = P.promisify(po2json.parseFile)
 
 Jed.prototype.format = i18n.format
@@ -13,9 +14,8 @@ module.exports = function (locales, defaultLanguage) {
       function (locale) {
         return poParseFile(
           path.join(
-            __dirname,
-            'node_modules/fxa-content-server-l10n/locale',
-            i18n.normalizeLocale(locale),
+            resolvePkg('fxa-content-server-l10n'),
+            'locale', i18n.normalizeLocale(locale),
             'LC_MESSAGES/server.po'
           ),
           {

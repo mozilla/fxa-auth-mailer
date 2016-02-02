@@ -27,6 +27,7 @@
     "mozlog": "2.0.2",
     "nodemailer": "0.7.1",
     "po2json": "0.4.1",
+    "resolve-pkg": "0.1.0",
     "restify": "4.0.3"
   },
   "devDependencies": {
