@@ -59,6 +59,31 @@ var conf = convict({
     format: String,
     default: 'en'
   },
+  verificationReminder: {
+    enabled: {
+      doc: 'set to true to enable checking the verification reminder queue',
+      format: Boolean,
+      env: 'VERIFICATION_REMINDER_ENABLED',
+      default: false
+    },
+    queueRegion: {
+      doc: 'The region where the queues live, most likely the same region we are sending email e.g. us-east-1, us-west-2',
+      format: String,
+      env: 'VERIFICATION_REMINDER_REGION',
+      default: ''
+    },
+    queueUrl: {
+      doc: 'The bounce queue URL to use (should include https://sqs.<region>.amazonaws.com/<account-id>/<queue-name>)',
+      format: String,
+      env: 'VERIFICATION_REMINDER_QUEUE_URL',
+      default: ''
+    },
+    visibilityTimeout: {
+      default: 43200,  // (in seconds - from 0 to 43200 - maximum 12 hours) for the message's visibility timeout.
+      doc: 'A period of time during which SQS prevents other consuming components from receiving and processing that message',
+      format: Number
+    }
+  },
   mail: {
     host: {
       doc: 'The ip address the server should bind',

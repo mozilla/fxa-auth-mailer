@@ -8,7 +8,6 @@ var config = require('../config')
 var log = require('../log')('server')
 var mailConfig = config.get('mail')
 
-var packageJson = require('../package.json')
 var P = require('bluebird')
 
 // NOTE: Mailer is also used by fxa-auth-server directly with an old logging interface
@@ -17,67 +16,33 @@ var mailerLog = require('../log')('mailer')
 var legacyMailerLog = require('../legacy_log')(mailerLog)
 var Mailer = require('../mailer')(legacyMailerLog)
 
+
+var verificationReminderConfig = config.get('verificationReminder')
+var VerificationReminder = require('../lib/verification-reminder')()
+
 P.all(
   [
     require('../translator')(config.get('locales')),
     require('../templates')()
   ]
-)
-.spread(
-  function (translator, templates) {
-    var mailer = new Mailer(translator, templates, mailConfig)
-    log.info('config', mailConfig)
-    log.info('templates', Object.keys(templates))
+  )
+  .spread(
+    function (translator, templates) {
+      var mailer = new Mailer(translator, templates, mailConfig)
+      log.info('config', mailConfig)
+      log.info('templates', Object.keys(templates))
 
-    var api = restify.createServer()
-    api.use(restify.bodyParser())
-    /*/
-    {
-      type:
-      email:
-      uid:
-      code:
-      token:
-      service:
-      redirectTo:
-      acceptLanguage:
+      // Start verification reminder checking
+      if (verificationReminderConfig.enabled) {
+        new VerificationReminder(mailer)
+      } else {
+        log.info('init', 'verification reminders not enabled - shutting down gracefully')
+      }
     }
-    /*/
-    api.post(
-      '/send',
-      function (req, res, next) {
-        var type = req.body.type
-        if (typeof(mailer[type]) === 'function') {
-          mailer[type](req.body)
-          res.send(200)
-        }
-        else {
-          log.error('send', { err: { message: 'invalid type', body: req.body }})
-          res.send(400)
-        }
-        next()
-      }
-    )
-
-    api.get(
-      '/',
-      function (req, res, next) {
-        res.send({ version: packageJson.version })
-        next()
-      }
-    )
-
-    api.listen(
-      config.port,
-      function () {
-        log.info('listening', { port: config.get('port') })
-      }
-    )
-  }
-)
-.catch(
-  function (err) {
-    log.error('init', err)
-    process.exit(8)
-  }
-)
+  )
+  .catch(
+    function (err) {
+      log.error('init', err)
+      process.exit(8)
+    }
+  )
