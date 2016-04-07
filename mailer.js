@@ -66,6 +66,28 @@ module.exports = function (log) {
     return 'href="' + this.initiatePasswordChangeUrl + '" style="color: #0095dd; text-decoration: none; font-family: sans-serif;"'
   }
 
+  Mailer.prototype._formatUserAgentInfo = function (message) {
+    // Build a first cut at a device description,
+    // without using any new strings.
+    // Future iterations can localize this better.
+    var parts = []
+    if (message.uaBrowser) {
+      var browser = message.uaBrowser
+      if (message.uaBrowserVersion) {
+        browser += ' ' + message.uaBrowserVersion
+      }
+      parts.push(browser)
+    }
+    if (message.uaOS) {
+      var os = message.uaOS
+      if (message.uaOSVersion) {
+        os += ' ' + message.uaOSVersion
+      }
+      parts.push(os)
+    }
+    return parts.join(', ')
+  }
+
   Mailer.prototype.send = function (message) {
     log.trace({ op: 'mailer.' + message.template, email: message.email, uid: message.uid })
 
@@ -255,9 +277,15 @@ module.exports = function (log) {
     })
   }
 
-  Mailer.prototype.newSyncDeviceEmail = function (message) {
-    log.trace({ op: 'mailer.newSyncDeviceEmail', email: message.email, uid: message.uid })
+  Mailer.prototype.newDeviceLoginEmail = function (message) {
+    log.trace({ op: 'mailer.newDeviceLoginEmail', email: message.email, uid: message.uid })
     var link = this.initiatePasswordChangeUrl + '?' + qs.stringify({ email: message.email })
+
+    // Make a human-readable timestamp string.
+    // For now it's always in UTC.
+    // Future iterations can localize this better.
+    var timestamp = new Date(message.timestamp || Date.now())
+    var timestampStr = timestamp.toISOString().substr(0, 16).replace('T', ' ') + ' UTC'
 
     return this.send({
       acceptLanguage: message.acceptLanguage,
@@ -266,8 +294,10 @@ module.exports = function (log) {
         'X-Link': link
       },
       subject: gettext('New sign-in to Firefox'),
-      template: 'newSyncDeviceEmail',
+      template: 'newDeviceLoginEmail',
       templateValues: {
+        device: this._formatUserAgentInfo(message),
+        timestamp: timestampStr,
         resetLink: link,
         supportUrl: this.supportUrl,
         supportLinkAttributes: this._supportLinkAttributes(),

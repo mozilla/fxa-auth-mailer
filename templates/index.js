@@ -53,7 +53,7 @@ module.exports = function () {
       'unlock',
       'password_changed',
       'password_reset',
-      'new_sync_device',
+      'new_device_login',
       'post_verify',
       'verification_reminder'
     ].map(loadTemplates)
