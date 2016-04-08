@@ -53,8 +53,10 @@ module.exports = function () {
       'unlock',
       'password_changed',
       'password_reset',
+      'password_reset_required',
       'new_device_login',
       'post_verify',
+      'suspicious_location',
       'verification_reminder'
     ].map(loadTemplates)
   )
