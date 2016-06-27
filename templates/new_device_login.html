@@ -3,6 +3,12 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <title>{{t "Firefox Accounts"}}</title>
+  <style>
+    .primary > span {
+      /* only affects the span's that are set to display:block; */
+      margin: 2px auto;
+    }
+  </style>
 </head>
 
 <body style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; margin: 0; padding: 0;">
@@ -20,7 +26,15 @@
 <tr style="page-break-before: always">
   <td valign="top">
     <h1 style="font-family: sans-serif; font-weight: normal; margin: 0 0 24px 0; text-align: center;">{{t "New sign-in to Firefox"}}</h1>
-    <p class="primary" style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0 0 12px 0; text-align: center;">{{{ device }}}<br/>{{ timestamp }}</p>
+    <p class="primary" style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0 0 12px 0; text-align: center;">{{{ device }}}<br/>
+<span style="display:block;">{{t "IP address: %(ip)s" }}</span>
+{{#if location }}
+<span style="display:block;">
+{{ location }}
+</span>
+{{/if}}
+<span style="display:block;">{{ timestamp }}</span>
+</p>
   </td>
 </tr>
 

@@ -1,4 +1,12 @@
 <% extends "partials/base/base_text_only.html" %>
 
 <% block heading %>{{t "New sign-in to Firefox"}}<% endblock %>
-<% block text_primary %>{{{ device }}}<br/>{{ timestamp }}<% endblock %>
+<% block text_primary %>{{{ device }}}<br/>
+<span style="display:block;">{{t "IP address: %(ip)s" }}</span>
+{{#if location }}
+<span style="display:block;">
+{{ location }}
+</span>
+{{/if}}
+<span style="display:block;">{{ timestamp }}</span>
+<% endblock %>

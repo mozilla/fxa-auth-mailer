@@ -48,6 +48,7 @@
     "jsxgettext-recursive": "0.0.5",
     "load-grunt-tasks": "3.5.0",
     "mkdirp": "0.5.1",
+    "moment-timezone": "0.5.4",
     "proxyquire": "1.7.10",
     "simplesmtp": "0.3.35",
     "sinon": "1.17.4",
