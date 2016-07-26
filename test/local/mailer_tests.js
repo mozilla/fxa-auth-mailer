@@ -87,16 +87,15 @@ P.all(
           uid: 'uid',
         }
 
-        var supportHtmlLink = new RegExp('<a href="' + config.get('mail').supportUrl + '" style="color: #0095dd; text-decoration: none; font-family: sans-serif;">Mozilla Support</a>')
-        var supportTextLink = config.get('mail').supportUrl
-
         if (includes(typesContainSupportLinks, type)) {
           test(
             'test support link is in email template output for ' + type,
             function (t) {
+              var supportTextLink = mailer._generateUTMLink(config.get('mail').supportUrl, {}, type, 'support')
+
               mailer.mailer.sendMail = function (emailConfig) {
-                t.equal(!! emailConfig.html.match(supportHtmlLink), true)
-                t.equal(!! emailConfig.text.match(supportTextLink), true)
+                t.ok(includes(emailConfig.html, supportTextLink))
+                t.ok(includes(emailConfig.text, supportTextLink))
                 t.end()
               }
               mailer[type](message)

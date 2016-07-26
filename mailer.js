@@ -7,6 +7,12 @@ var P = require('bluebird')
 var nodemailer = require('nodemailer')
 
 module.exports = function (log) {
+  // Email template to UTM campaign map
+  var utmCampaignMap = {
+    'verifyEmail': 'welcome'
+  }
+  var utmPrefix = 'fxa-'
+
   function extend(target, source) {
     for (var key in source) {
       target[key] = source[key]
@@ -61,8 +67,8 @@ module.exports = function (log) {
     this.mailer.close()
   }
 
-  Mailer.prototype._supportLinkAttributes = function () {
-    return linkAttributes(this.supportUrl)
+  Mailer.prototype._supportLinkAttributes = function (template) {
+    return linkAttributes(this._generateUTMLink(this.supportUrl, {}, template, 'support'))
   }
 
   Mailer.prototype._passwordResetLinkAttributes = function (email) {
@@ -153,6 +159,7 @@ module.exports = function (log) {
   Mailer.prototype.verifyEmail = function (message) {
     log.trace({ op: 'mailer.verifyEmail', email: message.email, uid: message.uid })
 
+    var template = 'verifyEmail'
     var query = {
       uid: message.uid,
       code: message.code
@@ -162,9 +169,11 @@ module.exports = function (log) {
     if (message.redirectTo) { query.redirectTo = message.redirectTo }
     if (message.resume) { query.resume = message.resume }
 
-    var link = this.verificationUrl + '?' + qs.stringify(query)
+    var link = this._generateUTMLink(this.verificationUrl, query, template, 'activate')
+    var alternativeLink = this._generateUTMLink(this.verificationUrl, query, template, 'activate-alternative')
+
     query.one_click = true
-    var oneClickLink = this.verificationUrl + '?' + qs.stringify(query)
+    var oneClickLink = this._generateUTMLink(this.verificationUrl, query, template, 'activate')
 
     return this.send({
       acceptLanguage: message.acceptLanguage,
@@ -176,13 +185,14 @@ module.exports = function (log) {
         'X-Verify-Code': message.code
       },
       subject: gettext('Verify your Firefox Account'),
-      template: 'verifyEmail',
+      template: template,
       templateValues: {
+        alternativeLink: alternativeLink,
         email: message.email,
         link: link,
         oneClickLink: oneClickLink,
-        supportUrl: this.supportUrl,
-        supportLinkAttributes: this._supportLinkAttributes()
+        supportUrl: this._generateUTMLink(this.supportUrl, {}, template, 'support'),
+        supportLinkAttributes: this._supportLinkAttributes(template)
       },
       uid: message.uid
     })
@@ -191,6 +201,7 @@ module.exports = function (log) {
   Mailer.prototype.verifyLoginEmail = function (message) {
     log.trace({ op: 'mailer.verifyLoginEmail', email: message.email, uid: message.uid })
 
+    var template = 'verifyLoginEmail'
     var query = {
       code: message.code,
       uid: message.uid
@@ -214,7 +225,7 @@ module.exports = function (log) {
         'X-Verify-Code': message.code
       },
       subject: gettext('Confirm new sign-in to Firefox'),
-      template: 'verifyLoginEmail',
+      template: template,
       templateValues: {
         device: this._formatUserAgentInfo(message),
         email: message.email,
@@ -222,7 +233,7 @@ module.exports = function (log) {
         oneClickLink: oneClickLink,
         passwordChangeLink: this.createPasswordChangeLink(message.email),
         passwordChangeLinkAttributes: this._passwordChangeLinkAttributes(message.email),
-        supportLinkAttributes: linkAttributes(this.supportUrl),
+        supportLinkAttributes: this._supportLinkAttributes(template),
         supportUrl: this.supportUrl
       },
       uid: message.uid
@@ -230,6 +241,7 @@ module.exports = function (log) {
   }
 
   Mailer.prototype.recoveryEmail = function (message) {
+    var template = 'resetEmail'
     var query = {
       token: message.token,
       code: message.code,
@@ -249,20 +261,21 @@ module.exports = function (log) {
         'X-Recovery-Code': message.code
       },
       subject: gettext('Reset your Firefox Account password'),
-      template: 'resetEmail',
+      template: template,
       templateValues: {
         code: message.code,
         email: message.email,
         link: link,
         signInUrl: this.createSignInLink(message.email),
         supportUrl: this.supportUrl,
-        supportLinkAttributes: this._supportLinkAttributes()
+        supportLinkAttributes: this._supportLinkAttributes(template)
       },
       uid: message.uid
     })
   }
 
   Mailer.prototype.passwordChangedEmail = function (message) {
+    var template = 'passwordChangedEmail'
     var link = this.createPasswordResetLink(message.email)
 
     return this.send({
@@ -272,11 +285,11 @@ module.exports = function (log) {
         'X-Link': link
       },
       subject: gettext('Your Firefox Account password has been changed'),
-      template: 'passwordChangedEmail',
+      template: template,
       templateValues: {
         resetLink: link,
         resetLinkAttributes: this._passwordResetLinkAttributes(message.email),
-        supportLinkAttributes: this._supportLinkAttributes(),
+        supportLinkAttributes: this._supportLinkAttributes(template),
         supportUrl: this.supportUrl
       },
       uid: message.uid
@@ -284,6 +297,7 @@ module.exports = function (log) {
   }
 
   Mailer.prototype.passwordResetEmail = function (message) {
+    var template = 'passwordResetEmail'
     var link = this.createPasswordResetLink(message.email)
 
     return this.send({
@@ -298,7 +312,7 @@ module.exports = function (log) {
         resetLink: link,
         resetLinkAttributes: this._passwordResetLinkAttributes(message.email),
         supportUrl: this.supportUrl,
-        supportLinkAttributes: this._supportLinkAttributes()
+        supportLinkAttributes: this._supportLinkAttributes(template)
       },
       uid: message.uid
     })
@@ -324,6 +338,7 @@ module.exports = function (log) {
 
   Mailer.prototype.newDeviceLoginEmail = function (message) {
     log.trace({ op: 'mailer.newDeviceLoginEmail', email: message.email, uid: message.uid })
+    var template = 'newDeviceLoginEmail'
     var link = this.createPasswordChangeLink(message.email)
 
     // Make a human-readable timestamp string.
@@ -339,13 +354,13 @@ module.exports = function (log) {
         'X-Link': link
       },
       subject: gettext('New sign-in to Firefox'),
-      template: 'newDeviceLoginEmail',
+      template: template,
       templateValues: {
         device: this._formatUserAgentInfo(message),
         passwordChangeLinkAttributes: this._passwordChangeLinkAttributes(message.email),
         resetLink: link,
-        supportLinkAttributes: this._supportLinkAttributes(),
-        supportUrl: this.supportUrl,
+        supportLinkAttributes: this._supportLinkAttributes(template),
+        supportUrl: this._generateUTMLink(this.supportUrl, {}, template, 'support'),
         timestamp: timestampStr
       },
       uid: message.uid
@@ -355,6 +370,7 @@ module.exports = function (log) {
   Mailer.prototype.postVerifyEmail = function (message) {
     log.trace({ op: 'mailer.postVerifyEmail', email: message.email, uid: message.uid })
 
+    var template = 'postVerifyEmail'
     // special utm params, just for this email
     // details at github.com/mozilla/fxa-auth-mailer/issues/110
     var postVerifyUtmParams = '?utm_source=email&utm_medium=email&utm_campaign=fx-account-verified'
@@ -369,7 +385,7 @@ module.exports = function (log) {
         'X-Link': link
       },
       subject: gettext('Firefox Account Verified'),
-      template: 'postVerifyEmail',
+      template: template,
       templateValues: {
         link: link,
         androidUrl: anrdoidLink,
@@ -377,7 +393,7 @@ module.exports = function (log) {
         iosUrl: iosLink,
         iosLinkAttributes: linkAttributes(iosLink),
         supportUrl: this.supportUrl,
-        supportLinkAttributes: this._supportLinkAttributes()
+        supportLinkAttributes: this._supportLinkAttributes(template)
       },
       uid: message.uid
     })
@@ -456,10 +472,30 @@ module.exports = function (log) {
         link: link,
         oneClickLink: oneClickLink,
         supportUrl: this.supportUrl,
-        supportLinkAttributes: this._supportLinkAttributes()
+        supportLinkAttributes: this._supportLinkAttributes(template)
       },
       uid: message.uid
     })
+  }
+
+  Mailer.prototype._generateUTMLink = function (link, queryParams, template, context) {
+    if (!queryParams) {
+      queryParams = {}
+    }
+
+    queryParams['utm_source'] = 'email'
+    queryParams['utm_medium'] = 'email'
+
+    var campaign = utmCampaignMap[template]
+    if (campaign) {
+      queryParams['utm_campaign'] = utmPrefix + campaign
+    }
+
+    if (context) {
+      queryParams['utm_context'] = utmPrefix + context
+    }
+
+    return link + '?' + qs.stringify(queryParams)
   }
 
   Mailer.prototype.createPasswordResetLink = function (email) {
