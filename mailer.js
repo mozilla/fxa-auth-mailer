@@ -9,7 +9,10 @@ var nodemailer = require('nodemailer')
 module.exports = function (log) {
   // Email template to UTM campaign map
   var utmCampaignMap = {
-    'verifyEmail': 'welcome'
+    'verifyEmail': 'welcome',
+    'verificationReminderFirstEmail': 'hello-again',
+    'verificationReminderSecondEmail': 'still-there',
+    'verificationReminderEmail': 'hello-again'
   }
   var utmPrefix = 'fxa-'
 
@@ -67,16 +70,16 @@ module.exports = function (log) {
     this.mailer.close()
   }
 
-  Mailer.prototype._supportLinkAttributes = function (template) {
-    return linkAttributes(this._generateUTMLink(this.supportUrl, {}, template, 'support'))
+  Mailer.prototype._supportLinkAttributes = function (template, context) {
+    return linkAttributes(this.createSupportLink(template, context))
   }
 
-  Mailer.prototype._passwordResetLinkAttributes = function (email) {
-    return linkAttributes(this.createPasswordResetLink(email))
+  Mailer.prototype._passwordResetLinkAttributes = function (email, template, context) {
+    return linkAttributes(this.createPasswordResetLink(email, template, context))
   }
 
-  Mailer.prototype._passwordChangeLinkAttributes = function (email) {
-    return linkAttributes(this.createPasswordChangeLink(email))
+  Mailer.prototype._passwordChangeLinkAttributes = function (email, template, context) {
+    return linkAttributes(this.createPasswordChangeLink(email, template, context))
   }
 
   Mailer.prototype._formatUserAgentInfo = function (message) {
@@ -112,7 +115,7 @@ module.exports = function (log) {
       html: localized.html,
       language: translator.language,
       subject: translator.gettext(message.subject),
-      text: localized.text,
+      text: localized.text
     }
   }
 
@@ -191,8 +194,8 @@ module.exports = function (log) {
         email: message.email,
         link: link,
         oneClickLink: oneClickLink,
-        supportUrl: this._generateUTMLink(this.supportUrl, {}, template, 'support'),
-        supportLinkAttributes: this._supportLinkAttributes(template)
+        supportUrl: this.createSupportLink(template, 'support'),
+        supportLinkAttributes: this._supportLinkAttributes(template, 'support')
       },
       uid: message.uid
     })
@@ -233,8 +236,8 @@ module.exports = function (log) {
         oneClickLink: oneClickLink,
         passwordChangeLink: this.createPasswordChangeLink(message.email),
         passwordChangeLinkAttributes: this._passwordChangeLinkAttributes(message.email),
-        supportLinkAttributes: this._supportLinkAttributes(template),
-        supportUrl: this.supportUrl
+        supportLinkAttributes: this._supportLinkAttributes(template, 'support'),
+        supportUrl: this.createSupportLink(template, 'support')
       },
       uid: message.uid
     })
@@ -267,8 +270,8 @@ module.exports = function (log) {
         email: message.email,
         link: link,
         signInUrl: this.createSignInLink(message.email),
-        supportUrl: this.supportUrl,
-        supportLinkAttributes: this._supportLinkAttributes(template)
+        supportUrl: this.createSupportLink(template, 'support'),
+        supportLinkAttributes: this._supportLinkAttributes(template, 'support')
       },
       uid: message.uid
     })
@@ -289,8 +292,8 @@ module.exports = function (log) {
       templateValues: {
         resetLink: link,
         resetLinkAttributes: this._passwordResetLinkAttributes(message.email),
-        supportLinkAttributes: this._supportLinkAttributes(template),
-        supportUrl: this.supportUrl
+        supportLinkAttributes: this._supportLinkAttributes(template, 'support'),
+        supportUrl: this.createSupportLink(template, 'support')
       },
       uid: message.uid
     })
@@ -311,8 +314,8 @@ module.exports = function (log) {
       templateValues: {
         resetLink: link,
         resetLinkAttributes: this._passwordResetLinkAttributes(message.email),
-        supportUrl: this.supportUrl,
-        supportLinkAttributes: this._supportLinkAttributes(template)
+        supportUrl: this.createSupportLink(template, 'support'),
+        supportLinkAttributes: this._supportLinkAttributes(template, 'support')
       },
       uid: message.uid
     })
@@ -359,8 +362,8 @@ module.exports = function (log) {
         device: this._formatUserAgentInfo(message),
         passwordChangeLinkAttributes: this._passwordChangeLinkAttributes(message.email),
         resetLink: link,
-        supportLinkAttributes: this._supportLinkAttributes(template),
-        supportUrl: this._generateUTMLink(this.supportUrl, {}, template, 'support'),
+        supportLinkAttributes: this._supportLinkAttributes(template, 'support'),
+        supportUrl: this.createSupportLink(template, 'support'),
         timestamp: timestampStr
       },
       uid: message.uid
@@ -392,8 +395,8 @@ module.exports = function (log) {
         androidLinkAttributes: linkAttributes(anrdoidLink),
         iosUrl: iosLink,
         iosLinkAttributes: linkAttributes(iosLink),
-        supportUrl: this.supportUrl,
-        supportLinkAttributes: this._supportLinkAttributes(template)
+        supportUrl: this.createSupportLink(template, 'support'),
+        supportLinkAttributes: this._supportLinkAttributes(template, 'support')
       },
       uid: message.uid
     })
@@ -453,9 +456,11 @@ module.exports = function (log) {
       reminder: message.type
     }
 
-    var link = this.verificationUrl + '?' + qs.stringify(query)
+    var link = this._generateUTMLink(this.verificationUrl, query, template, 'activate')
+    var alternativeLink = this._generateUTMLink(this.verificationUrl, query, template, 'activate-alternative')
+
     query.one_click = true
-    var oneClickLink = this.verificationUrl + '?' + qs.stringify(query)
+    var oneClickLink = this._generateUTMLink(this.verificationUrl, query, template, 'activate')
 
     return this.send({
       acceptLanguage: message.acceptLanguage || 'en',
@@ -468,11 +473,12 @@ module.exports = function (log) {
       subject: subject,
       template: template,
       templateValues: {
+        alternativeLink: alternativeLink,
         email: message.email,
         link: link,
         oneClickLink: oneClickLink,
-        supportUrl: this.supportUrl,
-        supportLinkAttributes: this._supportLinkAttributes(template)
+        supportUrl: this.createSupportLink(template, 'support'),
+        supportLinkAttributes: this._supportLinkAttributes(template, 'support')
       },
       uid: message.uid
     })
@@ -498,22 +504,26 @@ module.exports = function (log) {
     return link + '?' + qs.stringify(queryParams)
   }
 
-  Mailer.prototype.createPasswordResetLink = function (email) {
+  Mailer.prototype.createPasswordResetLink = function (email, template, context) {
     var queryParams = { email: email, reset_password_confirm: false }
 
-    return this.initiatePasswordResetUrl + '?' + qs.stringify(queryParams)
+    return this._generateUTMLink(this.initiatePasswordResetUrl, queryParams, template, context)
   }
 
-  Mailer.prototype.createPasswordChangeLink = function (email) {
+  Mailer.prototype.createPasswordChangeLink = function (email, template, context) {
     var queryParams = { email: email }
 
-    return this.initiatePasswordChangeUrl + '?' + qs.stringify(queryParams)
+    return this._generateUTMLink(this.initiatePasswordChangeUrl, queryParams, template, context)
   }
 
-  Mailer.prototype.createSignInLink = function (email) {
+  Mailer.prototype.createSignInLink = function (email, template, context) {
     var queryParams = { email: email }
 
-    return this.signInUrl + '?' + qs.stringify(queryParams)
+    return this._generateUTMLink(this.signInUrl, queryParams, template, context)
+  }
+
+  Mailer.prototype.createSupportLink = function (template, context) {
+    return this._generateUTMLink(this.supportUrl, {}, template, context)
   }
 
   return Mailer

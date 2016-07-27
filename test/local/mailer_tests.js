@@ -91,7 +91,7 @@ P.all(
           test(
             'test support link is in email template output for ' + type,
             function (t) {
-              var supportTextLink = mailer._generateUTMLink(config.get('mail').supportUrl, {}, type, 'support')
+              var supportTextLink = mailer.createSupportLink(type, 'support')
 
               mailer.mailer.sendMail = function (emailConfig) {
                 t.ok(includes(emailConfig.html, supportTextLink))
