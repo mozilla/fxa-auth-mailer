@@ -188,6 +188,11 @@ var conf = convict({
       doc: 'url to Mozilla Support product page',
       format: String,
       default: 'https://support.mozilla.org/kb/im-having-problems-with-my-firefox-account'
+    },
+    privacyUrl: {
+      doc: 'url to Mozilla privacy page',
+      format: String,
+      default: 'https://www.mozilla.org/privacy'
     }
   }
 })

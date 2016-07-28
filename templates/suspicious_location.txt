@@ -18,4 +18,4 @@
 {{{t "The Firefox Accounts team" }}}
 
 Mozilla. 331 E Evelyn Ave, Mountain View, CA 94041
-{{t "Mozilla Privacy Policy" }} https://www.mozilla.org/privacy
+{{t "Mozilla Privacy Policy" }} {{{privacyUrl}}}

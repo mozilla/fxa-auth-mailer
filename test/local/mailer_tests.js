@@ -24,8 +24,7 @@ var messageTypes = [
   'recoveryEmail',
   'suspiciousLocationEmail',
   'verificationReminderEmail',
-  'verifyEmail',
-  'verifyLoginEmail'
+  'verifyEmail'
 ]
 
 var typesContainSupportLinks = [
@@ -35,7 +34,8 @@ var typesContainSupportLinks = [
   'postVerifyEmail',
   'recoveryEmail',
   'verificationReminderEmail',
-  'verifyEmail'
+  'verifyEmail',
+  'verifyLoginEmail'
 ]
 
 var typesContainPasswordResetLinks = [
@@ -60,6 +60,14 @@ var typesContainAndroidStoreLinks = [
 
 var typesContainIOSStoreLinks = [
   'postVerifyEmail'
+]
+
+var typesContainAlternativeLinks = [
+  'postVerifyEmail',
+  'recoveryEmail',
+  'verificationReminderEmail',
+  'verifyEmail',
+  'verifyLoginEmail'
 ]
 
 function includes(haystack, needle) {
@@ -87,6 +95,37 @@ P.all(
           uid: 'uid',
         }
 
+        test(
+          'test privacy link is in email template output for ' + type,
+          function (t) {
+            var privacyLink = mailer.createPrivacyLink(type, 'privacy')
+
+            mailer.mailer.sendMail = function (emailConfig) {
+              t.ok(includes(emailConfig.html, privacyLink))
+              t.ok(includes(emailConfig.text, privacyLink))
+              t.end()
+            }
+            mailer[type](message)
+          }
+        )
+
+        if (includes(typesContainAlternativeLinks, type)){
+          test(
+            'test alternative link is in email template output for ' + type,
+            function (t) {
+              // Because the alternative link to could to anything, just test that
+              // it contains part of the `alternative` utm param
+              var alternativeBit = '-alternative'
+
+              mailer.mailer.sendMail = function (emailConfig) {
+                t.ok(includes(emailConfig.html, alternativeBit))
+                t.end()
+              }
+              mailer[type](message)
+            }
+          )
+        }
+
         if (includes(typesContainSupportLinks, type)) {
           test(
             'test support link is in email template output for ' + type,
@@ -104,7 +143,7 @@ P.all(
         }
 
         if (includes(typesContainPasswordResetLinks, type)) {
-          var resetPasswordLink = mailer.createPasswordResetLink(message.email)
+          var resetPasswordLink = mailer.createPasswordResetLink(message.email, type)
 
           test(
             'reset password link is in email template output for ' + type,
@@ -120,7 +159,7 @@ P.all(
         }
 
         if (includes(typesContainPasswordChangeLinks, type)) {
-          var passwordChangeLink = mailer.createPasswordChangeLink(message.email)
+          var passwordChangeLink = mailer.createPasswordChangeLink(message.email, type)
           test(
             'password change link is in email template output for ' + type,
             function (t) {
@@ -199,12 +238,18 @@ P.all(
           test(
             'test utm params for ' + type,
             function (t) {
-              var utmParam = '?utm_source=email&utm_medium=email&utm_campaign=fx-account-verified'
+              // Override utm_campaign for backwards compatibility
+              var queryParams = {
+                'utm_campaign': 'fx-account-verified'
+              }
+              var syncLink = mailer._generateUTMLink(config.get('mail').syncUrl, queryParams, type, 'connect-device')
+              var androidLink = mailer._generateUTMLink(config.get('mail').androidUrl, queryParams, type, 'connect-android')
+              var iosLink = mailer._generateUTMLink(config.get('mail').iosUrl, queryParams, type, 'connect-ios')
 
               mailer.mailer.sendMail = function (emailConfig) {
-                t.ok(emailConfig.html.indexOf(config.get('mail').androidUrl + utmParam) > 0)
-                t.ok(emailConfig.html.indexOf(config.get('mail').iosUrl + utmParam) > 0)
-                t.ok(emailConfig.html.indexOf(config.get('mail').syncUrl + utmParam) > 0)
+                t.ok(includes(emailConfig.html, syncLink))
+                t.ok(includes(emailConfig.html, androidLink))
+                t.ok(includes(emailConfig.html, iosLink))
                 t.end()
               }
               mailer[type](message)
