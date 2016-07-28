@@ -535,10 +535,12 @@ module.exports = function (log) {
       query['utm_context'] = utmPrefix + context
     }
 
-    // Check if url contains any query params, if so, append new params and return
-    var parsedLink = url.parse(link)
-    if (parsedLink.query) {
-      return parsedLink.href + '&' + qs.stringify(query)
+    if (link) {
+      // Check if url contains any query params, if so, append new params and return
+      var parsedLink = url.parse(link)
+      if (parsedLink.query) {
+        return parsedLink.href + '&' + qs.stringify(query)
+      }
     }
 
     return link + '?' + qs.stringify(query)
