@@ -98,7 +98,7 @@ P.all(
         test(
           'test privacy link is in email template output for ' + type,
           function (t) {
-            var privacyLink = mailer.createPrivacyLink(type, 'privacy')
+            var privacyLink = mailer.createPrivacyLink(type)
 
             mailer.mailer.sendMail = function (emailConfig) {
               t.ok(includes(emailConfig.html, privacyLink))
@@ -113,7 +113,7 @@ P.all(
           test(
             'test alternative link is in email template output for ' + type,
             function (t) {
-              // Because the alternative link to could to anything, just test that
+              // Because the alternative link could be from anything, just test that
               // it contains part of the `alternative` utm param
               var alternativeBit = '-alternative'
 
@@ -130,7 +130,7 @@ P.all(
           test(
             'test support link is in email template output for ' + type,
             function (t) {
-              var supportTextLink = mailer.createSupportLink(type, 'support')
+              var supportTextLink = mailer.createSupportLink(type)
 
               mailer.mailer.sendMail = function (emailConfig) {
                 t.ok(includes(emailConfig.html, supportTextLink))
