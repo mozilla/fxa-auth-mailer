@@ -24,7 +24,8 @@ var messageTypes = [
   'recoveryEmail',
   'suspiciousLocationEmail',
   'verificationReminderEmail',
-  'verifyEmail'
+  'verifyEmail',
+  'verifyLoginEmail'
 ]
 
 var typesContainSupportLinks = [
@@ -67,6 +68,11 @@ var typesContainAlternativeLinks = [
   'recoveryEmail',
   'verificationReminderEmail',
   'verifyEmail',
+  'verifyLoginEmail'
+]
+
+var typesContainLocationData = [
+  'newDeviceLoginEmail',
   'verifyLoginEmail'
 ]
 
@@ -213,6 +219,36 @@ P.all(
               mailer.mailer.sendMail = function (emailConfig) {
                 t.ok(includes(emailConfig.html, signInLink))
                 t.ok(includes(emailConfig.text, signInLink))
+                t.end()
+              }
+              mailer[type](message)
+            }
+          )
+        }
+
+        if (includes(typesContainLocationData, type)) {
+          var location = {
+            city: 'Mountain View',
+            country: 'USA'
+          }
+
+          message = {
+            device: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:48.0) Gecko/20100101 Firefox/48.0',
+            email: 'a@b.com',
+            ip: '219.129.234.194',
+            location: location,
+            timeZone: 'America/Los_Angeles'
+          }
+
+          test(
+            'Location and ip data is present in email template output for ' + type,
+            function (t) {
+              mailer.mailer.sendMail = function (emailConfig) {
+                t.ok(includes(emailConfig.html, location.city + ', ' + location.country))
+                t.ok(includes(emailConfig.html, message.ip))
+
+                t.ok(includes(emailConfig.text, location.city + ', ' + location.country))
+                t.ok(includes(emailConfig.text, message.ip))
                 t.end()
               }
               mailer[type](message)
