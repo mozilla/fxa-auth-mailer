@@ -19,7 +19,8 @@ module.exports = function (log) {
     'passwordResetEmail': 'password-reset',
     'postVerifyEmail': 'account-verified',
     'newDeviceLoginEmail': 'new-device-signin',
-    'resetEmail': 'reset-account',
+    'recoveryEmail': 'forgot-password',
+    'resetEmail': 'forgot-password',
     'suspiciousLocationEmail': 'suspicious-location',
     'verifyEmail': 'welcome',
     'verifyLoginEmail': 'new-signin',
@@ -553,7 +554,7 @@ module.exports = function (log) {
     })
   }
 
-  Mailer.prototype._generateUTMLink = function (link, query, templateName, context) {
+  Mailer.prototype._generateUTMLink = function (link, query, templateName, content) {
     if (!query) {
       query = {}
     }
@@ -566,8 +567,8 @@ module.exports = function (log) {
       query['utm_campaign'] = utmPrefix + campaign
     }
 
-    if (context) {
-      query['utm_context'] = utmPrefix + context
+    if (content) {
+      query['utm_content'] = utmPrefix + content
     }
 
     if (link) {
@@ -593,10 +594,10 @@ module.exports = function (log) {
     return this._generateUTMLink(this.initiatePasswordChangeUrl, query, templateName, 'change-password')
   }
 
-  Mailer.prototype.createSignInLink = function (email, templateName, context) {
+  Mailer.prototype.createSignInLink = function (email, templateName, content) {
     var query = { email: email }
 
-    return this._generateUTMLink(this.signInUrl, query, templateName, context)
+    return this._generateUTMLink(this.signInUrl, query, templateName, content)
   }
 
   Mailer.prototype.createSupportLink = function (templateName) {

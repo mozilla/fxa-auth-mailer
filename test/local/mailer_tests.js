@@ -35,8 +35,7 @@ var typesContainSupportLinks = [
   'postVerifyEmail',
   'recoveryEmail',
   'verificationReminderEmail',
-  'verifyEmail',
-  'verifyLoginEmail'
+  'verifyEmail'
 ]
 
 var typesContainPasswordResetLinks = [
