@@ -97,7 +97,7 @@ P.all(
           email: 'a@b.com',
           locations: [],
           service: 'service',
-          uid: 'uid',
+          uid: 'uid'
         }
 
         test(
@@ -211,7 +211,7 @@ P.all(
         }
 
         if (includes(typesContainSignInLinks, type)) {
-          var signInLink = mailer.createSignInLink(message.email)
+          var signInLink = mailer.createSignInLink(message.email, type)
           test(
             'sign in link is in email template output for ' + type,
             function (t) {
@@ -273,13 +273,9 @@ P.all(
           test(
             'test utm params for ' + type,
             function (t) {
-              // Override utm_campaign for backwards compatibility
-              var queryParams = {
-                'utm_campaign': 'fx-account-verified'
-              }
-              var syncLink = mailer._generateUTMLink(config.get('mail').syncUrl, queryParams, type, 'connect-device')
-              var androidLink = mailer._generateUTMLink(config.get('mail').androidUrl, queryParams, type, 'connect-android')
-              var iosLink = mailer._generateUTMLink(config.get('mail').iosUrl, queryParams, type, 'connect-ios')
+              var syncLink = mailer._generateUTMLink(config.get('mail').syncUrl, {}, type, 'connect-device')
+              var androidLink = mailer._generateUTMLink(config.get('mail').androidUrl, {}, type, 'connect-android')
+              var iosLink = mailer._generateUTMLink(config.get('mail').iosUrl, {}, type, 'connect-ios')
 
               mailer.mailer.sendMail = function (emailConfig) {
                 t.ok(includes(emailConfig.html, syncLink))
