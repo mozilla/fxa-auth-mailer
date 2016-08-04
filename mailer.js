@@ -557,16 +557,16 @@ module.exports = function (log) {
       parsedQuery[key] = query[key]
     })
 
-    query['utm_source'] = 'email'
-    query['utm_medium'] = 'email'
+    parsedQuery['utm_source'] = 'email'
+    parsedQuery['utm_medium'] = 'email'
 
     var campaign = templateNameToCampaignMap[templateName]
-    if (campaign && !query['utm_campaign']) {
-      query['utm_campaign'] = UTM_PREFIX + campaign
+    if (campaign && !parsedQuery['utm_campaign']) {
+      parsedQuery['utm_campaign'] = UTM_PREFIX + campaign
     }
 
     if (content) {
-      query['utm_content'] = UTM_PREFIX + content
+      parsedQuery['utm_content'] = UTM_PREFIX + content
     }
 
     return parsedLink.protocol + '//' + parsedLink.host + parsedLink.pathname + '?' + qs.stringify(parsedQuery)
