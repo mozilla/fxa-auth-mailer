@@ -13,13 +13,14 @@ var DEFAULT_TIMEZONE = 'Etc/UTC'
 var UTM_PREFIX = 'fx-'
 
 module.exports = function (log) {
-  // Email template to UTM campaign map
+  // Email template to UTM campaign map, each of these should be unique and
+  // map to exactly one email template.
   var templateNameToCampaignMap = {
+    'newDeviceLoginEmail': 'new-device-signin',
     'passwordResetRequiredEmail': 'password-reset-required',
     'passwordChangedEmail': 'password-changed-success',
     'passwordResetEmail': 'password-reset-success',
     'postVerifyEmail': 'account-verified',
-    'newDeviceLoginEmail': 'new-device-signin',
     'recoveryEmail': 'forgot-password',
     'suspiciousLocationEmail': 'suspicious-location',
     'verifyEmail': 'welcome',
@@ -27,6 +28,23 @@ module.exports = function (log) {
     'verificationReminderFirstEmail': 'hello-again-first',
     'verificationReminderSecondEmail': 'still-there-second',
     'verificationReminderEmail': 'hello-again-first'
+  }
+
+  // Email template to UTM content, this is typically the main call out link/button
+  // in template.
+  var templateNameToContentMap = {
+    'newDeviceLoginEmail': 'password-change',
+    'passwordChangedEmail': 'password-change',
+    'passwordResetEmail': 'password-reset',
+    'passwordResetRequiredEmail': 'password-reset',
+    'postVerifyEmail': 'connect-device',
+    'recoveryEmail': 'reset-password',
+    'suspiciousLocationEmail': 'password-reset',
+    'verificationReminderFirstEmail': 'activate',
+    'verificationReminderSecondEmail': 'activate',
+    'verificationReminderEmail': 'activate',
+    'verifyEmail': 'activate',
+    'verifyLoginEmail': 'confirm-signin'
   }
 
   function extend(target, source) {
@@ -218,7 +236,7 @@ module.exports = function (log) {
     if (message.redirectTo) { query.redirectTo = message.redirectTo }
     if (message.resume) { query.resume = message.resume }
 
-    var links = this._generateLinks(this.verificationUrl, message.email, query, templateName, 'activate')
+    var links = this._generateLinks(this.verificationUrl, message.email, query, templateName)
 
     return this.send({
       acceptLanguage: message.acceptLanguage,
@@ -257,7 +275,7 @@ module.exports = function (log) {
     if (message.redirectTo) { query.redirectTo = message.redirectTo }
     if (message.resume) { query.resume = message.resume }
 
-    var links = this._generateLinks(this.verifyLoginUrl, message.email, query, templateName, 'confirm-signin')
+    var links = this._generateLinks(this.verifyLoginUrl, message.email, query, templateName)
 
     return this.send({
       acceptLanguage: message.acceptLanguage,
@@ -300,7 +318,7 @@ module.exports = function (log) {
     if (message.redirectTo) { query.redirectTo = message.redirectTo }
     if (message.resume) { query.resume = message.resume }
 
-    var links = this._generateLinks(this.passwordResetUrl, message.email, query, templateName, 'reset-password')
+    var links = this._generateLinks(this.passwordResetUrl, message.email, query, templateName)
 
     return this.send({
       acceptLanguage: message.acceptLanguage,
@@ -328,7 +346,7 @@ module.exports = function (log) {
   Mailer.prototype.passwordChangedEmail = function (message) {
     var templateName = 'passwordChangedEmail'
 
-    var links = this._generateLinks(this.initiatePasswordResetUrl, message.email, {}, templateName, 'password-change')
+    var links = this._generateLinks(this.initiatePasswordResetUrl, message.email, {}, templateName)
 
     return this.send({
       acceptLanguage: message.acceptLanguage,
@@ -351,7 +369,7 @@ module.exports = function (log) {
 
   Mailer.prototype.passwordResetEmail = function (message) {
     var templateName = 'passwordResetEmail'
-    var links = this._generateLinks(this.initiatePasswordResetUrl, message.email, {}, templateName, 'password-reset')
+    var links = this._generateLinks(this.initiatePasswordResetUrl, message.email, {}, templateName)
 
     return this.send({
       acceptLanguage: message.acceptLanguage,
@@ -374,7 +392,7 @@ module.exports = function (log) {
 
   Mailer.prototype.passwordResetRequiredEmail = function (message) {
     var templateName = 'passwordResetRequiredEmail'
-    var links = this._generateLinks(this.initiatePasswordResetUrl, message.email, {}, templateName, 'password-reset')
+    var links = this._generateLinks(this.initiatePasswordResetUrl, message.email, {}, templateName)
 
     return this.send({
       acceptLanguage: message.acceptLanguage,
@@ -395,7 +413,7 @@ module.exports = function (log) {
   Mailer.prototype.newDeviceLoginEmail = function (message) {
     log.trace({ op: 'mailer.newDeviceLoginEmail', email: message.email, uid: message.uid })
     var templateName = 'newDeviceLoginEmail'
-    var links = this._generateLinks(this.initiatePasswordChangeUrl, message.email, {}, templateName, 'password-change')
+    var links = this._generateLinks(this.initiatePasswordChangeUrl, message.email, {}, templateName)
 
     return this.send({
       acceptLanguage: message.acceptLanguage,
@@ -424,7 +442,7 @@ module.exports = function (log) {
     log.trace({ op: 'mailer.postVerifyEmail', email: message.email, uid: message.uid })
 
     var templateName = 'postVerifyEmail'
-    var links = this._generateLinks(this.syncUrl, message.email, {}, templateName, 'connect-device')
+    var links = this._generateLinks(this.syncUrl, message.email, {}, templateName)
 
     return this.send({
       acceptLanguage: message.acceptLanguage,
@@ -453,7 +471,7 @@ module.exports = function (log) {
     log.trace({ op: 'mailer.suspiciousLocationEmail', email: message.email, uid: message.uid })
 
     var templateName = 'suspiciousLocationEmail'
-    var links = this._generateLinks(this.initiatePasswordResetUrl, message.email, {}, templateName, 'password-reset')
+    var links = this._generateLinks(this.initiatePasswordResetUrl, message.email, {}, templateName)
 
     // the helper function `t` references `this.translator`. Because of
     // the way Handlebars `each` loops work, a translator instance must be
@@ -505,7 +523,7 @@ module.exports = function (log) {
       reminder: message.type
     }
 
-    var links = this._generateLinks(this.verificationUrl, message.email, query, templateName, 'activate')
+    var links = this._generateLinks(this.verificationUrl, message.email, query, templateName)
 
     return this.send({
       acceptLanguage: message.acceptLanguage || 'en',
@@ -554,10 +572,12 @@ module.exports = function (log) {
     return parsedLink.protocol + '//' + parsedLink.host + parsedLink.pathname + '?' + qs.stringify(parsedQuery)
   }
 
-  Mailer.prototype._generateLinks = function (primaryLink, email, query, templateName, utmContent) {
+  Mailer.prototype._generateLinks = function (primaryLink, email, query, templateName) {
     // Generate all possible links. The option to use a specific link
     // is left up to the template.
     var links = {}
+
+    var utmContent = templateNameToContentMap[templateName]
 
     links['alternativeLink'] = this._generateUTMLink(primaryLink, query, templateName, utmContent + '-alternative')
     links['link'] = this._generateUTMLink(primaryLink, query, templateName, utmContent)
