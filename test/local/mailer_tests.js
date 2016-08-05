@@ -75,6 +75,11 @@ var typesContainLocationData = [
   'verifyLoginEmail'
 ]
 
+var typesContainPasswordManagerInfoLinks = [
+  'passwordResetRequiredEmail',
+  'suspiciousLocationEmail'
+]
+
 function includes(haystack, needle) {
   return (haystack.indexOf(needle) > -1)
 }
@@ -218,6 +223,22 @@ P.all(
               mailer.mailer.sendMail = function (emailConfig) {
                 t.ok(includes(emailConfig.html, signInLink))
                 t.ok(includes(emailConfig.text, signInLink))
+                t.end()
+              }
+              mailer[type](message)
+            }
+          )
+        }
+
+        if (includes(typesContainPasswordManagerInfoLinks, type)) {
+          var passwordManagerInfoUrl = mailer._generateLinks(config.get('mail').passwordManagerInfoUrl, message.email, {}, type).passwordManagerInfoUrl
+
+          test(
+            'password manager info link is in email template output for ' + type,
+            function (t) {
+              mailer.mailer.sendMail = function (emailConfig) {
+                t.ok(includes(emailConfig.html, passwordManagerInfoUrl))
+                t.ok(includes(emailConfig.text, passwordManagerInfoUrl))
                 t.end()
               }
               mailer[type](message)

@@ -193,6 +193,11 @@ var conf = convict({
       doc: 'url to Mozilla privacy page',
       format: String,
       default: 'https://www.mozilla.org/privacy'
+    },
+    passwordManagerInfoUrl: {
+      doc: 'url to Firefox password manager information',
+      format: String,
+      default: 'https://support.mozilla.org/kb/password-manager-remember-delete-change-and-import#w_viewing-and-deleting-passwords'
     }
   }
 })

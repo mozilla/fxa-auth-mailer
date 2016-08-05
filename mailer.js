@@ -99,6 +99,7 @@ module.exports = function (log) {
     this.initiatePasswordResetUrl = config.initiatePasswordResetUrl
     this.iosUrl = config.iosUrl
     this.mailer = sender || nodemailer.createTransport('SMTP', options)
+    this.passwordManagerInfoUrl = config.passwordManagerInfoUrl
     this.passwordResetUrl = config.passwordResetUrl
     this.privacyUrl = config.privacyUrl
     this.sender = config.sender
@@ -403,6 +404,7 @@ module.exports = function (log) {
       subject: gettext('Firefox Account password reset required'),
       template: templateName,
       templateValues: {
+        passwordManagerInfoUrl: links.passwordManagerInfoUrl,
         privacyUrl: links.privacyUrl,
         resetLink: links.resetLink
       },
@@ -492,6 +494,7 @@ module.exports = function (log) {
       subject: gettext('Suspicious activity with your Firefox Account'),
       template: templateName,
       templateValues: {
+        passwordManagerInfoUrl: links.passwordManagerInfoUrl,
         privacyUrl: links.privacyUrl,
         locations: message.locations,
         resetLink: links.resetLink
@@ -596,6 +599,8 @@ module.exports = function (log) {
 
     links['androidLink'] = this._generateUTMLink(this.androidUrl, query, templateName, 'connect-android')
     links['iosLink'] = this._generateUTMLink(this.iosUrl, query, templateName, 'connect-ios')
+
+    links['passwordManagerInfoUrl'] = this._generateUTMLink(this.passwordManagerInfoUrl, query, templateName, 'password-info')
 
     var queryOneClick = extend(query, {one_click: true})
     links['oneClickLink'] = this._generateUTMLink(primaryLink, queryOneClick, templateName, utmContent + '-oneclick')
