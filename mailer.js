@@ -218,17 +218,16 @@ module.exports = function (log) {
               id: status && status.messageId
             }
           )
-          d.reject(err)
-        } else {
-          log.info(
-            {
-              op: 'mailer.send.1',
-              status: status && status.message,
-              id: status && status.messageId
-            }
-          )
-          d.resolve(status)
+          return d.reject(err)
         }
+        log.info(
+          {
+            op: 'mailer.send.1',
+            status: status && status.message,
+            id: status && status.messageId
+          }
+        )
+        return d.resolve(status)
       }
     )
     return d.promise
