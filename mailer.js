@@ -209,15 +209,26 @@ module.exports = function (log) {
     this.mailer.sendMail(
       emailConfig,
       function (err, status) {
-        log.trace(
-          {
-            op: 'mailer.send.1',
-            err: err && err.message,
-            status: status && status.message,
-            id: status && status.messageId
-          }
-        )
-        return err ? d.reject(err) : d.resolve(status)
+        if (err) {
+          log.error(
+            {
+              op: 'mailer.send.1',
+              err: err && err.message,
+              status: status && status.message,
+              id: status && status.messageId
+            }
+          )
+          d.reject(err)
+        } else {
+          log.trace(
+            {
+              op: 'mailer.send.1',
+              status: status && status.message,
+              id: status && status.messageId
+            }
+          )
+          d.resolve(status)
+        }
       }
     )
     return d.promise
