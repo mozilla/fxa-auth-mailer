@@ -220,7 +220,7 @@ module.exports = function (log) {
           )
           d.reject(err)
         } else {
-          log.trace(
+          log.info(
             {
               op: 'mailer.send.1',
               status: status && status.message,
