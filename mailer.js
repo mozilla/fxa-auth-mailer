@@ -196,7 +196,7 @@ module.exports = function (log) {
       html: localized.html,
       headers: extend({
         'Content-Language': localized.language,
-        'template': message.template
+        'X-Template-Name': message.template
       }, message.headers)
     }
 

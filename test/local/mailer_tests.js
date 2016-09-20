@@ -105,7 +105,7 @@ P.all(
           'Contains template header for ' + type,
           function (t) {
             mailer.mailer.sendMail = function (emailConfig) {
-              var templateName = emailConfig.headers.template
+              var templateName = emailConfig.headers['X-Template-Name']
 
               if (type === 'verificationReminderEmail') {
                 // Handle special case for verification reminders
