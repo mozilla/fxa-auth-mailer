@@ -248,7 +248,8 @@ P.all(
         if (includes(typesContainLocationData, type)) {
           var location = {
             city: 'Mountain View',
-            country: 'USA'
+            country: 'USA',
+            stateCode: 'CA'
           }
 
           message = {
@@ -263,10 +264,10 @@ P.all(
             'Location and ip data is present in email template output for ' + type,
             function (t) {
               mailer.mailer.sendMail = function (emailConfig) {
-                t.ok(includes(emailConfig.html, location.city + ', ' + location.country))
+                t.ok(includes(emailConfig.html, location.city + ', ' + location.stateCode + ', ' + location.country))
                 t.ok(includes(emailConfig.html, message.ip))
 
-                t.ok(includes(emailConfig.text, location.city + ', ' + location.country))
+                t.ok(includes(emailConfig.text, location.city + ', ' + location.stateCode + ', '  + location.country))
                 t.ok(includes(emailConfig.text, message.ip))
                 t.end()
               }
