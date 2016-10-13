@@ -136,10 +136,7 @@ module.exports = function (log) {
     // Future iterations can localize this better.
     var parts = []
     if (message.uaBrowser) {
-      var browser = message.uaBrowser
-      if (message.uaBrowserVersion) {
-        browser += ' ' + message.uaBrowserVersion
-      }
+      var browser = 'Firefox on'
       parts.push(browser)
     }
     if (message.uaOS) {
@@ -149,7 +146,7 @@ module.exports = function (log) {
       }
       parts.push(os)
     }
-    return parts.join(', ')
+    return parts.join(' ')
   }
 
   Mailer.prototype._constructLocationString = function (message) {
