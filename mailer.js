@@ -137,9 +137,6 @@ module.exports = function (log) {
     var parts = []
     if (message.uaBrowser) {
       var browser = message.uaBrowser
-      if (message.uaBrowserVersion) {
-        browser += ' ' + message.uaBrowserVersion
-      }
       parts.push(browser)
     }
     if (message.uaOS) {
@@ -149,7 +146,7 @@ module.exports = function (log) {
       }
       parts.push(os)
     }
-    return parts.join(', ')
+    return parts.join(' on ')
   }
 
   Mailer.prototype._constructLocationString = function (message) {
