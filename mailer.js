@@ -139,14 +139,17 @@ module.exports = function (log) {
     var uaOS = message.uaOS
     var uaOSVersion = message.uaOSVersion
     
-    if (uaBrowser && uaOS) {
-      return translator.format(translator.gettext('%(uaBrowser)s on %(uaOS)%(uaOSVersion)'), { uaBrowser: uaBrowser, uaOS: uaOS, uaOSVersion: uaOSVersion })
+    if (uaBrowser && uaOS && uaOSVersion) {
+      return translator.format(translator.gettext('%(uaBrowser)s on %(uaOS) %(uaOSVersion)'),
+                               { uaBrowser: uaBrowser, uaOS: uaOS, uaOSVersion: uaOSVersion })
+    } else if (uaBrowser && uaOS) {
+      return translator.format(translator.gettext('%(uaBrowser)s on %(uaOS)'),
+                               { uaBrowser: uaBrowser, uaOS: uaOS })
     }
-    else{
-      if (uaBrowser){
+    else {
+      if (uaBrowser) {
         return uaBrowser
-      }
-      else if (uaOS) {
+      } else if (uaOS) {
         if (uaOSVersion) {
           var parts = uaOS + ' ' + uaOSVersion
           return parts
