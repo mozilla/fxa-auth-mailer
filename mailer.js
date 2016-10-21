@@ -134,19 +134,31 @@ module.exports = function (log) {
     // Build a first cut at a device description,
     // without using any new strings.
     // Future iterations can localize this better.
-    var parts = []
-    if (message.uaBrowser) {
-      var browser = message.uaBrowser
-      parts.push(browser)
+    var translator = this.translator(message.acceptLanguage)
+    var uaBrowser = message.uaBrowser
+    var uaOS = message.uaOS
+    var uaOSVersion = message.uaOSVersion
+    
+    if (uaBrowser && uaOS) {
+      return translator.format(translator.gettext('%(uaBrowser)s on %(uaOS)%(uaOSVersion)'), { uaBrowser: uaBrowser, uaOS: uaOS, uaOSVersion: uaOSVersion })
     }
-    if (message.uaOS) {
-      var os = message.uaOS
-      if (message.uaOSVersion) {
-        os += ' ' + message.uaOSVersion
+    else{
+      if (uaBrowser){
+        return uaBrowser
       }
-      parts.push(os)
+      else if (uaOS) {
+        if (uaOSVersion) {
+          var parts = uaOS + ' ' + uaOSVersion
+          return parts
+        }
+        else {
+          return uaOS
+        }
+      }
+      else {
+        return ''
+      }
     }
-    return parts.join(' on ')
   }
 
   Mailer.prototype._constructLocationString = function (message) {
