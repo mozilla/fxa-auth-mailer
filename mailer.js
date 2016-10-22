@@ -138,7 +138,7 @@ module.exports = function (log) {
     var uaBrowser = message.uaBrowser
     var uaOS = message.uaOS
     var uaOSVersion = message.uaOSVersion
-    
+
     if (uaBrowser && uaOS && uaOSVersion) {
       return translator.format(translator.gettext('%(uaBrowser)s on %(uaOS) %(uaOSVersion)'),
                                { uaBrowser: uaBrowser, uaOS: uaOS, uaOSVersion: uaOSVersion })
