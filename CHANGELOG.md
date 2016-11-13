@@ -1,3 +1,13 @@
+<a name="1.72.1"></a>
+## [1.72.1](https://github.com/mozilla/fxa-auth-mailer/compare/v1.72.0...v1.72.1) (2016-11-13)
+
+
+### Bug Fixes
+
+* **config:** disable polling if pollTime === 0 (#236) ([2f26b53](https://github.com/mozilla/fxa-auth-mailer/commit/2f26b53))
+
+
+
 <a name="1.72.0"></a>
 # [1.72.0](https://github.com/mozilla/fxa-auth-mailer/compare/v1.71.0...v1.72.0) (2016-10-19)
 
