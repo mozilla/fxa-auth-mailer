@@ -204,6 +204,20 @@ var conf = convict({
     format: String,
     default: undefined,
     env: 'SES_CONFIGURATION_SET'
+  },
+  sms: {
+    apiKey: {
+      doc: 'API key for the SMS service',
+      default: 'YOU MUST CHANGE ME',
+      format: String,
+      env: 'SMS_API_KEY'
+    },
+    apiSecret: {
+      doc: 'API secret for the SMS service',
+      default: 'YOU MUST CHANGE ME',
+      format: String,
+      env: 'SMS_API_SECRET'
+    }
   }
 })
 
