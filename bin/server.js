@@ -27,7 +27,8 @@ P.all(
 )
 .spread(
   function (translator, templates) {
-    var mailer = new Mailer(translator, templates, mailConfig)
+    const mailer = new Mailer(translator, templates, mailConfig)
+    const sms = require('./sms')(mailerLog, translator, templates, config.get('sms'))
     log.info('config', config.getProperties())
     log.info('mailConfig', mailConfig)
     log.info('templates', Object.keys(templates))
@@ -71,6 +72,18 @@ P.all(
         next()
       }
     )
+
+    // POST /sms
+    // { acceptLanguage, messageId, phoneNumber }
+    api.post('/sms', (req, res, next) => {
+      return sms.send(req.body)
+        .then(() => res.send(200))
+        .catch(err => {
+          log.error('sms', { err, body: req.body })
+          res.send(err)
+        })
+        .finally(next)
+    })
 
     api.get(
       '/',
