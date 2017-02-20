@@ -32,8 +32,16 @@ const sendSms = sinon.spy((from, to, message, callback) => {
     ]
   })
 })
+let nexmoBalance = 1
+const checkBalance = sinon.spy(callback => {
+  callback(null, {
+    value: nexmoBalance,
+    autoReload: false
+  })
+})
 function Nexmo () {}
 Nexmo.prototype.message = { sendSms }
+Nexmo.prototype.account = { checkBalance }
 
 P.all([
   require('../../translator')(['en'], 'en'),
@@ -44,18 +52,24 @@ P.all([
   })(log, translator, templates, {
     apiKey: 'foo',
     apiSecret: 'bar',
+    balanceThreshold: 1,
     installFirefoxLink: 'https://baz/qux'
   })
 
   test('interface is correct', t => {
     t.equal(typeof sms.send, 'function', 'sms.send is function')
     t.equal(sms.send.length, 4, 'sms.send expects 4 arguments')
-    t.equal(Object.keys(sms).length, 1, 'sms has no other methods')
+
+    t.equal(typeof sms.status, 'function', 'sms.status is function')
+    t.equal(sms.status.length, 0, 'sms.status expects no arguments')
+
+    t.equal(Object.keys(sms).length, 2, 'sms has no other methods')
+
     t.done()
   })
 
   test('send a valid sms', t => {
-    t.plan(13)
+    t.plan(14)
     return sms.send('+442078553000', 'Firefox', 1, 'en')
       .then(() => {
         t.equal(sendSms.callCount, 1, 'nexmo.message.sendSms was called once')
@@ -73,7 +87,7 @@ P.all([
           senderId: 'Firefox',
           messageId: 1,
           acceptLanguage: 'en'
-        }, 'log.info was passed the correct data')
+        }, 'log.trace was passed the correct data')
 
         t.equal(log.info.callCount, 1, 'log.info was called once')
         t.equal(log.info.args[0].length, 1, 'log.info was passed one argument')
@@ -85,6 +99,7 @@ P.all([
         }, 'log.info was passed the correct data')
 
         t.equal(log.error.callCount, 0, 'log.error was not called')
+        t.equal(checkBalance.callCount, 0, 'checkBalance was not called')
       })
       .finally(() => {
         sendSms.reset()
@@ -138,6 +153,58 @@ P.all([
         log.trace.reset()
         sendSms.reset()
         log.error.reset()
+      })
+  })
+
+  test('get status when balance is good', t => {
+    t.plan(12)
+    return sms.status()
+      .then(result => {
+        t.deepEqual(result, { balance: 1, isGood: true }, 'result is correct')
+
+        t.equal(checkBalance.callCount, 1, 'nexmo.account.checkBalance was called once')
+        t.equal(checkBalance.args[0].length, 1, 'nexmo.account.checkBalance was passed no arguments')
+        t.equal(typeof checkBalance.args[0][0], 'function', 'nexmo.account.checkBalance was passed a callback function')
+
+        t.equal(log.trace.callCount, 1, 'log.trace was called once')
+        t.equal(log.trace.args[0].length, 1, 'log.trace was passed one argument')
+        t.deepEqual(log.trace.args[0][0], { op: 'sms.status' }, 'log.trace was passed the correct data')
+
+        t.equal(log.info.callCount, 1, 'log.info was called once')
+        t.equal(log.info.args[0].length, 1, 'log.info was passed one argument')
+        t.deepEqual(log.info.args[0][0], {
+          op: 'sms.status.success',
+          balance: 1,
+          isGood: true
+        }, 'log.info was passed the correct data')
+
+        t.equal(log.error.callCount, 0, 'log.error was not called')
+        t.equal(sendSms.callCount, 0, 'sendSms was not called')
+      })
+      .finally(() => {
+        checkBalance.reset()
+        log.trace.reset()
+        log.info.reset()
+      })
+  })
+
+  test('get status when balance is too low', t => {
+    t.plan(5)
+    nexmoBalance = 0.99
+    return sms.status()
+      .then(result => {
+        t.deepEqual(result, { balance: 0.99, isGood: false }, 'result is correct')
+
+        t.equal(checkBalance.callCount, 1, 'nexmo.account.checkBalance was called once')
+        t.equal(log.trace.callCount, 1, 'log.trace was called once')
+        t.equal(log.info.callCount, 1, 'log.info was called once')
+
+        t.equal(log.error.callCount, 0, 'log.error was not called')
+      })
+      .finally(() => {
+        checkBalance.reset()
+        log.trace.reset()
+        log.info.reset()
       })
   })
 })
