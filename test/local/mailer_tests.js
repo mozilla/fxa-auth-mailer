@@ -127,6 +127,9 @@ P.all(
           'Contains template header for ' + type,
           function (t) {
             mailer.mailer.sendMail = function (emailConfig) {
+              t.equal(emailConfig.from, config.get('mail.sender'), 'from header is correct')
+              t.equal(emailConfig.sender, config.get('mail.sender'), 'sender header is correct')
+
               var templateName = emailConfig.headers['X-Template-Name']
 
               if (type === 'verificationReminderEmail') {
