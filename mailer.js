@@ -90,6 +90,10 @@ module.exports = function (log) {
   }
 
   function Mailer(translator, templates, config, sender) {
+    if (! translator || ! templates || ! config) {
+      throw new Error('Translator, templates and config are all required.')
+    }
+
     var options = {
       host: config.host,
       secure: config.secure,
