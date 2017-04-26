@@ -1,1 +1,0 @@
-{{t "As requested, here is a link to install Firefox on your mobile device: %(link)s"}}
